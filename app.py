@@ -25,12 +25,16 @@ st.markdown("""
         border-radius: 6px; border: none; height: 3rem; transition: 0.2s ease;
     }
     h1, h2, h3, p, span { color: #11262d !important; }
+    /* Secondary button styling for the auto-fill */
+    .stElementToolbar { display: none; }
     </style>
     """, unsafe_allow_html=True)
 
 # --- SESSION STATE MANAGEMENT ---
 if 'flow_step' not in st.session_state:
     st.session_state.flow_step = 1
+if 'query_content' not in st.session_state:
+    st.session_state.query_content = ""
 
 # --- SIDEBAR: THE UNITY CATALOG EXPERT ---
 with st.sidebar:
@@ -41,7 +45,7 @@ with st.sidebar:
     
     if st.session_state.flow_step == 1:
         st.info("🟢 **System:** Active")
-        st.write("Monitoring workspace telemetry. Enter your query in the editor.")
+        st.write("Monitoring workspace telemetry. Use the 'Auto-fill' button in the editor to simulate a user query.")
     
     elif st.session_state.flow_step == 2:
         st.error("🚨 **Governance Alert**")
@@ -50,17 +54,19 @@ with st.sidebar:
             with st.spinner("Initializing JIT Infrastructure..."):
                 time.sleep(1.5)
                 st.session_state.flow_step = 3
+                # Pre-fill sandbox with a hint for the next step
+                st.session_state.query_content = "-- Re-run your logic here using the masked table\nSELECT * FROM synthetic_samples.hr_salary_masked;"
                 st.rerun()
             
     elif st.session_state.flow_step == 3:
         st.warning("⚡ **JIT Sandbox Active**")
-        st.write("I've provisioned a synthetic schema. **Action:** Re-run your query logic using the sanitized table:")
+        st.write("Synthetic schema provisioned. Re-execute the query to verify logic.")
         st.code("synthetic_samples.hr_salary_masked", language="sql")
         
     elif st.session_state.flow_step == 4:
         st.balloons()
         st.success("✅ **Mastery Verified**")
-        st.write("Logic validated. 'Proof of Mastery' synced with access request.")
+        st.write("Logic validated. 'Proof of Mastery' synced.")
         if st.button("Sync to Learning Dashboard", key="sync_btn"):
             st.session_state.flow_step = 5
             st.rerun()
@@ -74,31 +80,34 @@ if st.session_state.flow_step < 5:
         
         # PHASES 1 & 2: THE "CLEAN SLATE" WORKSPACE
         if st.session_state.flow_step <= 2:
-            st.caption("Target: PROD_CLUSTER_MAIN | Catalog: main")
-            
-            # Using a fixed key to prevent state loss
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.caption("Target: PROD_CLUSTER_MAIN | Catalog: main")
+            with col2:
+                if st.button("🪄 Auto-fill"):
+                    st.session_state.query_content = "SELECT user_id, full_name, salary \nFROM main.hr_pii.salary_records \nWHERE department = 'Engineering';"
+                    st.rerun()
+
             query_input = st.text_area("SQL Workspace", 
-                                      placeholder="e.g., SELECT * FROM main.hr_pii.salary_records;", 
-                                      height=300, 
+                                      value=st.session_state.query_content,
+                                      height=250, 
                                       key="prod_editor")
             
             if st.button("▶️ Execute Query", key="exec_prod"):
                 if not query_input:
-                    st.warning("Please input a query to monitor telemetry.")
+                    st.warning("Please input a query.")
                 elif "salary" in query_input.lower() or "pii" in query_input.lower():
                     with st.spinner("Checking Unity Catalog Permissions..."):
                         time.sleep(1.2)
                         st.session_state.flow_step = 2
                         st.rerun()
-                else:
-                    st.info("Query executed. Results returned (No PII detected).")
         
         # PHASES 3 & 4: THE SANDBOX VALIDATION
         else:
             st.caption("Target: JIT_SANDBOX_881 | Catalog: sandbox")
             sandbox_input = st.text_area("Sandbox Workspace", 
-                                        placeholder="-- Use: SELECT * FROM synthetic_samples.hr_salary_masked", 
-                                        height=300, 
+                                        value=st.session_state.query_content,
+                                        height=250, 
                                         key="sandbox_editor")
             
             if st.button("▶️ Execute Sandbox Query", key="exec_sandbox"):
@@ -108,11 +117,11 @@ if st.session_state.flow_step < 5:
                         st.session_state.flow_step = 4
                         st.rerun()
                 else:
-                    st.error("Sandbox Error: Table not found. Use the 'synthetic_samples' table.")
+                    st.error("Sandbox Error: Please use the 'synthetic_samples' table.")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
-# RESULTS DISPLAY (For Step 4)
+# RESULTS DISPLAY (Step 4)
 if st.session_state.flow_step == 4:
     st.table([{"user_id": 1024, "salary": "REDACTED"}, {"user_id": 1025, "salary": "REDACTED"}])
 
@@ -130,4 +139,5 @@ elif st.session_state.flow_step == 5:
         st.success("Verified. Your 'Unity Catalog Expert' badge is now live.")
         if st.button("Reset Presentation"):
             st.session_state.flow_step = 1
+            st.session_state.query_content = ""
             st.rerun()
