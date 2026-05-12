@@ -2,14 +2,43 @@ import streamlit as st
 import time
 
 # --- CONFIG & THEME ---
-st.set_page_config(layout="wide", page_title="Unity Catalog Expert | Enablement PoC")
+st.set_page_config(layout="wide", page_title="Unity Catalog Expert | Databricks PoC")
 
+# CSS: Professional "Lakehouse" UI with distinct sections
 st.markdown("""
     <style>
-    .stApp { background-color: #11262d; color: #f9f9f9; }
-    .stTextArea textarea { background-color: #1b3139 !important; color: #00f2ff !important; border: 1px solid #3c5e6b; }
-    .stButton button { width: 100%; background-color: #ff3621; color: white; font-weight: bold; }
-    .stAlert { background-color: #1b3139; border: 1px solid #3c5e6b; }
+    /* Main Background and Typography */
+    .stApp { background-color: #0b141a; color: #f9f9f9; font-family: 'Inter', sans-serif; }
+    
+    /* Centering the Subheader */
+    .centered-text { text-align: center; color: #8b949e; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+    
+    /* SQL Editor Card */
+    .sql-card { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    
+    /* Sidebar Branding */
+    [data-testid="stSidebar"] { background-color: #0d1117; border-right: 1px solid #ff3621; padding-top: 20px; }
+    
+    /* SQL Text Area */
+    .stTextArea textarea { 
+        background-color: #0d1117 !important; 
+        color: #58a6ff !important; 
+        border: 1px solid #30363d !important; 
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px !important;
+    }
+    
+    /* Buttons */
+    .stButton button { 
+        width: 100%; 
+        background-color: #ff3621; 
+        color: white; 
+        font-weight: 600; 
+        border-radius: 4px;
+        border: none;
+        transition: 0.3s;
+    }
+    .stButton button:hover { background-color: #e6311e; transform: translateY(-1px); }
     </style>
     """, unsafe_allow_html=True)
 
@@ -17,69 +46,106 @@ st.markdown("""
 if 'flow_step' not in st.session_state:
     st.session_state.flow_step = 1
 
-# --- SIDEBAR ---
+# --- SIDEBAR: THE UNITY CATALOG EXPERT ---
 with st.sidebar:
+    # Databricks Logo
+    st.image("https://upload.wikimedia.org/wikipedia/commons/6/63/Databricks_Logo.png", width=200)
+    st.markdown('<p class="centered-text">Governed Enablement Infrastructure</p>', unsafe_allow_html=True)
     st.title("🛡️ Unity Catalog Expert")
-    st.markdown("**Real Time AI Assistant**")
-    st.markdown("---")
+    st.write("---")
     
-    steps = ["Monitoring", "Block Detected", "Sandbox Active", "Validation Complete", "Learning Follow-up"]
-    st.write(f"**Current Phase:** {steps[st.session_state.flow_step-1]}")
+    if st.session_state.flow_step == 1:
+        st.success("🟢 Monitoring Workspace")
+        st.caption("Awaiting telemetry signals from the SQL Editor...")
     
-    if st.session_state.flow_step == 2:
+    elif st.session_state.flow_step == 2:
+        st.error("🚨 Governance Alert")
+        st.info("**Expert Logic:** You are trying to access non-anonymized PII records; let's help you with this.")
         if st.button("Provision Unity Sandbox"):
-            st.session_state.flow_step = 3
-            st.rerun()
+            with st.spinner("Initializing Serverless Compute..."):
+                time.sleep(1.5)
+                st.session_state.flow_step = 3
+                st.rerun()
+            
+    elif st.session_state.flow_step == 3:
+        st.warning("⚡ JIT Sandbox Active")
+        st.write("I've provisioned a synthetic schema. **Action:** Re-run your query logic using the sanitized table:")
+        st.code("synthetic_samples.hr_salary_masked", language="sql")
+        
     elif st.session_state.flow_step == 4:
-        st.success("✅ Logic Verified")
-        if st.button("End Session & Sync Learning"):
+        st.balloons()
+        st.success("✅ Mastery Verified")
+        st.write("Your logic respects masking policies. I have synced this 'Proof of Mastery' with your production access request.")
+        if st.button("Complete & Sync Dashboard"):
             st.session_state.flow_step = 5
             st.rerun()
 
 # --- MAIN WORKSPACE ---
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    if st.session_state.flow_step < 5:
-        st.header("Databricks SQL Editor")
-        if st.session_state.flow_step < 3:
-            st.caption("Production Workspace: `/main/hr_data/`")
-            query = st.text_area("SQL Editor", value="SELECT * FROM main.hr_pii.salary_records LIMIT 10;", height=200)
-            if st.button("Run Query"):
-                st.error("Error: [403] PERMISSION_DENIED. Access to 'main.hr_pii' is restricted.")
-                st.session_state.flow_step = 2
-                st.rerun()
+if st.session_state.flow_step < 5:
+    st.header("Databricks SQL Editor")
+    
+    # CARD 1: THE EDITOR
+    with st.container():
+        st.markdown('<div class="sql-card">', unsafe_allow_html=True)
+        
+        if st.session_state.flow_step <= 2:
+            st.caption("Target Environment: PROD_CLUSTER_MAIN | Catalog: main")
+            # Start with a clear/blank editor
+            query_input = st.text_area("SQL Workspace", placeholder="SELECT * FROM main.hr_pii.salary_records;", height=300)
+            
+            if st.button("▶️ Execute Query"):
+                if not query_input:
+                    st.warning("Please input a query to monitor telemetry.")
+                elif "salary" in query_input.lower() or "pii" in query_input.lower():
+                    with st.spinner("Checking Unity Catalog Permissions..."):
+                        time.sleep(1)
+                        st.error("Error: [403] PERMISSION_DENIED. Access to non-anonymized PII is restricted by Global Policy.")
+                        st.session_state.flow_step = 2
+                        st.rerun()
+                else:
+                    st.info("Query executed. No governance triggers detected.")
+        
         else:
-            st.caption("📍 Working in: `temp_unity_sandbox_session_881`")
-            st.text_area("Sandbox Editor", value="SELECT user_id, 'REDACTED' as salary FROM synthetic_samples.hr_salary;", height=200)
-            if st.button("Validate in Sandbox"):
-                st.table([{"user_id": 1, "salary": "REDACTED"}])
-                st.session_state.flow_step = 4
-    else:
-        # STEP 5: THE CONTINUAL LEARNING MODULE
-        st.header("📖 Personal Learning Dashboard")
-        st.subheader("Daily Recap: Governance & PII Masking")
-        st.write("Earlier today, you encountered a **Unity Catalog 403 Block**. Great job using the Sandbox to validate your logic!")
+            # SANDBOX EDITOR
+            st.caption("Target Environment: JIT_SANDBOX_881 | Catalog: sandbox")
+            sandbox_input = st.text_area("Sandbox Workspace", placeholder="-- Paste query logic using synthetic_samples table...", height=300)
+            
+            if st.button("▶️ Execute Sandbox Query"):
+                if "synthetic_samples" in sandbox_input.lower():
+                    with st.spinner("Validating against synthetic data..."):
+                        time.sleep(1)
+                        st.success("Query Successful. 2 rows returned (Masked).")
+                        st.table([{"user_id": 1024, "salary": "REDACTED"}, {"user_id": 1025, "salary": "REDACTED"}])
+                        st.session_state.flow_step = 4
+                else:
+                    st.error("Sandbox Error: Table not found. Please use the 'synthetic_samples' table provided by the Expert.")
         
-        st.info("**Deep Dive:** Why is `main.hr_pii` restricted? \n\nThis schema contains Tier-1 sensitive data. By using the 'Masked' view, you reduced company risk while maintaining project velocity.")
-        
-        st.markdown("### Mastery Challenge")
-        choice = st.radio("Which system allows for centralized access control across the Databricks Lakehouse?", ["Unity Catalog", "Delta Lake", "Hive Metastore"])
-        if st.button("Submit Answer"):
-            st.balloons()
-            st.success("Correct! You've earned the **'Unity Catalog Power User'** badge.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-with col2:
-    st.subheader("Expert Insights")
-    if st.session_state.flow_step == 1:
-        st.write("I am monitoring your workspace telemetry. If you hit a technical or governance hurdle, I will provide real-time 'hydration'.")
-    elif st.session_state.flow_step == 2:
-        st.info("**Logic:** You are trying to access non-anonymized PII records; let's help you with this.")
-        st.write("Instead of a support ticket, let's validate your query logic in a synthetic sandbox environment.")
-    elif st.session_state.flow_step == 4:
-        st.write("Your mastery is verified. I've prepared your access request and scheduled a deep-dive module for later today.")
-    elif st.session_state.flow_step == 5:
-        st.write("This is the 'Continual' phase. We turn point-in-time friction into long-term organizational knowledge.")
-        if st.button("Restart Scenario"):
+# --- STEP 5: CONTINUAL LEARNING DASHBOARD ---
+else:
+    st.header("📖 Personal Learning Dashboard")
+    st.subheader("Daily Recap: Governance & PII Masking")
+    
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.info("**The 'Struggle' Event:** \n\nAt 11:15 AM, you hit a Unity Catalog 403 block on `main.hr_pii`. You successfully used a JIT Sandbox to resolve the logic gap.")
+    
+    with col_b:
+        st.success("**Mastery Earned:** \n\nYou demonstrated ability to operate within PII masking frameworks. Your 'Unity Catalog Practitioner' badge is now active.")
+
+    st.markdown("---")
+    st.markdown("### Mastery Challenge")
+    st.write("Why was your initial query blocked by the Expert?")
+    choice = st.radio("Select the correct reason:", [
+        "The cluster was down.",
+        "Unity Catalog identified PII in the schema with no authorized 'SELECT' privilege.",
+        "The syntax was incorrect."
+    ])
+    
+    if st.button("Submit & Finalize"):
+        st.balloons()
+        st.success("Correct. You've closed the loop for today's learning.")
+        if st.button("Reset Presentation"):
             st.session_state.flow_step = 1
             st.rerun()
