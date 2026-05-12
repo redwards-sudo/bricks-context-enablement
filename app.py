@@ -2,7 +2,7 @@ import streamlit as st
 import time
 
 # --- CONFIG & THEME ---
-st.set_page_config(layout="wide", page_title="Unity Pilot | AI Learning Assistant")
+st.set_page_config(layout="wide", page_title="Unity Pilot | AI Assistant")
 
 # Professional Databricks-inspired Styling
 st.markdown("""
@@ -21,7 +21,7 @@ if 'flow_step' not in st.session_state:
 # --- SIDEBAR (THE "PILOT" LOGIC) ---
 with st.sidebar:
     st.title("🧩 Unity Pilot")
-    st.markdown("**AI-Native Contextual Enablement**")
+    st.markdown("**AI Assistant**")
     st.markdown("---")
     
     if st.session_state.flow_step == 1:
