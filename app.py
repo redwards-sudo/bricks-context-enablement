@@ -2,7 +2,7 @@ import streamlit as st
 import time
 
 # --- CONFIG & THEME ---
-st.set_page_config(layout="wide", page_title="Unity Pilot | AI-Native Enablement")
+st.set_page_config(layout="wide", page_title="Unity Pilot | AI Learning Assistant")
 
 # Professional Databricks-inspired Styling
 st.markdown("""
