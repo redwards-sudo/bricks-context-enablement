@@ -34,7 +34,7 @@ if 'flow_step' not in st.session_state:
 
 # --- SIDEBAR: THE UNITY CATALOG EXPERT ---
 with st.sidebar:
-    st.image("https://en.wikipedia.org/wiki/Databricks#/media/File:Databricks_logo.svg", width=220)
+    st.image("https://commons.wikimedia.org/wiki/File:Databricks_Logo.png", width=220)
     st.markdown('<p class="centered-text">Unity Catalog Expert</p>', unsafe_allow_html=True)
     st.title("🛡️ Your AI Assistant")
     st.write("---")
