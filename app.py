@@ -2,86 +2,46 @@ import streamlit as st
 import time
 
 # --- CONFIG & THEME ---
-st.set_page_config(layout="wide", page_title="Unity Catalog Expert | Enablement PoC")
+st.set_page_config(layout="wide", page_title="Unity Catalog Expert | Databricks PoC")
 
 st.markdown("""
     <style>
-    /* Main Background and Typography */
     .stApp { background-color: #0b141a; color: #f9f9f9; font-family: 'Inter', sans-serif; }
-    
-    /* Centering and Styling Subheader */
     .centered-text { 
-        text-align: center; 
-        color: #8b949e; 
-        margin-top: -10px;
-        margin-bottom: 20px; 
-        text-transform: uppercase; 
-        letter-spacing: 2px; 
-        font-size: 0.75rem;
-        font-weight: 600;
+        text-align: center; color: #8b949e; margin-top: -10px; margin-bottom: 20px; 
+        text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; font-weight: 600;
     }
-    
-    /* Section Separation */
     .sql-card { 
-        background-color: #161b22; 
-        border: 1px solid #30363d; 
-        border-radius: 12px; 
-        padding: 25px; 
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; 
+        padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    
-    /* Assistant Sidebar Branding */
-    [data-testid="stSidebar"] { 
-        background-color: #0d1117; 
-        border-right: 2px solid #ff3621; 
-        padding-top: 30px; 
-    }
-    
-    /* SQL Editor Styling */
+    [data-testid="stSidebar"] { background-color: #0d1117; border-right: 2px solid #ff3621; padding-top: 30px; }
     .stTextArea textarea { 
-        background-color: #0d1117 !important; 
-        color: #58a6ff !important; 
-        border: 1px solid #30363d !important; 
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 15px !important;
-        border-radius: 4px;
+        background-color: #0d1117 !important; color: #58a6ff !important; 
+        border: 1px solid #30363d !important; font-family: 'JetBrains Mono', monospace; font-size: 15px !important;
     }
-    
-    /* Buttons */
     .stButton button { 
-        width: 100%; 
-        background-color: #ff3621; 
-        color: white; 
-        font-weight: 600; 
-        border-radius: 6px;
-        border: none;
-        height: 3rem;
-        transition: 0.3s ease;
+        width: 100%; background-color: #ff3621; color: white; font-weight: 600; 
+        border-radius: 6px; border: none; height: 3rem; transition: 0.3s ease;
     }
-    .stButton button:hover { background-color: #e6311e; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(255,54,33,0.2); }
-    
-    /* Alert Overrides */
-    .stAlert { border-radius: 8px; border: 1px solid #3c5e6b; }
+    .stButton button:hover { background-color: #e6311e; transform: translateY(-1px); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SESSION STATE MANAGEMENT ---
+# --- SESSION STATE ---
 if 'flow_step' not in st.session_state:
     st.session_state.flow_step = 1
 
-# --- SIDEBAR: THE UNITY CATALOG EXPERT ASSISTANT ---
+# --- SIDEBAR: THE UNITY CATALOG EXPERT ---
 with st.sidebar:
-    # Logo and Subheader
-    st.image("https://upload.wikimedia.org/wikipedia/commons/6/63/Databricks_Logo.png", width=220)
-    st.markdown('<p class="centered-text">Governed Enablement Infrastructure</p>', unsafe_allow_html=True)
-    st.title("🛡️ Unity Catalog Expert")
+    st.image("https://en.wikipedia.org/wiki/Databricks#/media/File:Databricks_logo.svg", width=220)
+    st.markdown('<p class="centered-text">Unity Catalog Expert</p>', unsafe_allow_html=True)
+    st.title("🛡️ Your AI Assistant")
     st.write("---")
     
-    # Contextual Assistant States
     if st.session_state.flow_step == 1:
-        st.success("🟢 System: Active")
-        st.write("I am monitoring workspace telemetry. Enter a query to begin.")
+        st.success("🟢 Monitoring Workspace")
+        st.caption("Listening for Unity Catalog telemetry signals...")
     
     elif st.session_state.flow_step == 2:
         st.error("🚨 Governance Alert")
@@ -105,7 +65,7 @@ with st.sidebar:
             st.session_state.flow_step = 5
             st.rerun()
 
-# --- MAIN WORKSPACE: THE SQL EDITOR ---
+# --- MAIN WORKSPACE ---
 if st.session_state.flow_step < 5:
     st.header("Databricks SQL Editor")
     
@@ -115,8 +75,6 @@ if st.session_state.flow_step < 5:
         # PHASES 1 & 2: THE "CLEAN SLATE" WORKSPACE
         if st.session_state.flow_step <= 2:
             st.caption("Target: PROD_CLUSTER_MAIN | Catalog: main | User: randall.edwards")
-            
-            # Starts empty to force user interaction
             query_input = st.text_area("SQL Workspace", placeholder="e.g., SELECT * FROM main.hr_pii.salary_records;", height=300)
             
             if st.button("▶️ Execute Query"):
@@ -152,22 +110,11 @@ if st.session_state.flow_step < 5:
 else:
     st.header("📖 Personal Learning Dashboard")
     st.subheader("Continual Enablement Recap")
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.info("**Incident Event:** \n\nEarlier today, you hit a Unity Catalog 403 block. You successfully used a JIT Sandbox to resolve the logic gap.")
-    
-    with col_b:
-        st.success("**Knowledge Milestone:** \n\nYou demonstrated the ability to operate within PII masking frameworks. This session has been applied toward your 'Governance Professional' certification.")
-
+    st.info("**The Incident Event:** At 11:15 AM, you hit a Unity Catalog 403 block. You successfully used a JIT Sandbox to resolve the logic gap.")
     st.markdown("---")
     st.markdown("### Mastery Verification Challenge")
     st.write("Which Databricks component identified the PII restriction and triggered the Expert assistant?")
-    choice = st.radio("Select the correct architectural layer:", [
-        "The Spark Engine",
-        "Unity Catalog",
-        "The Hive Metastore"
-    ])
+    choice = st.radio("Select the correct architectural layer:", ["The Spark Engine", "Unity Catalog", "The Hive Metastore"])
     
     if st.button("Submit & Finalize Credential"):
         st.balloons()
