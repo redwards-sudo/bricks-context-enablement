@@ -21,7 +21,7 @@ if 'flow_step' not in st.session_state:
 # --- SIDEBAR (THE "PILOT" LOGIC) ---
 with st.sidebar:
     st.title("🧩 Unity Pilot")
-    st.markdown("**AI Assistant**")
+    st.markdown("**Your Unity Catalog Expert**")
     st.markdown("---")
     
     if st.session_state.flow_step == 1:
