@@ -30,7 +30,7 @@ with st.sidebar:
     elif st.session_state.flow_step == 2:
         st.warning("🚨 **Permission Block**")
         st.write("**Target:** `main.hr_pii.salary_records`")
-        st.write("**Logic:** Contextual Hydration required.")
+        st.write("**Logic:** You are trying to access non-anonymized PII records; let's help you with this.")
         if st.button("Provision Unity Sandbox"):
             st.session_state.flow_step = 3
             st.rerun()
