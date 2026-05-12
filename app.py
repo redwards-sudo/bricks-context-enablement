@@ -1,54 +1,94 @@
 import streamlit as st
 import time
 
-# Page Config for a Professional Technical Look
-st.set_page_config(layout="wide", page_title="Databricks Guardian Agent")
+# --- CONFIG & THEME ---
+st.set_page_config(layout="wide", page_title="Unity Pilot | AI-Native Enablement")
 
-# Professional Styling
+# Professional Databricks-inspired Styling
 st.markdown("""
     <style>
-    .stApp { background-color: #082535; color: white; }
-    .stTextArea textarea { background-color: #1b3139 !important; color: #00f2ff !important; font-family: 'Source Code Pro', monospace; }
-    .stButton button { background-color: #ff3621; color: white; border-radius: 5px; }
+    .stApp { background-color: #11262d; color: #f9f9f9; }
+    .stTextArea textarea { background-color: #1b3139 !important; color: #00f2ff !important; border: 1px solid #3c5e6b; }
+    .stButton button { width: 100%; background-color: #ff3621; color: white; font-weight: bold; }
+    .stAlert { background-color: #1b3139; border: 1px solid #3c5e6b; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🧱 Databricks 'Guardian' Agent")
-st.subheader("Contextual Enablement & JIT Sandbox Infrastructure")
+# --- SESSION STATE ---
+if 'flow_step' not in st.session_state:
+    st.session_state.flow_step = 1
 
-col1, col2 = st.columns([3, 2])
+# --- SIDEBAR (THE "PILOT" LOGIC) ---
+with st.sidebar:
+    st.title("🧩 Unity Pilot")
+    st.markdown("**AI-Native Contextual Enablement**")
+    st.markdown("---")
+    
+    if st.session_state.flow_step == 1:
+        st.write("🛰️ **Status:** Monitoring Workspace")
+        st.caption("Listening for Unity Catalog signals...")
+    elif st.session_state.flow_step == 2:
+        st.warning("🚨 **Permission Block**")
+        st.write("**Target:** `main.hr_pii.salary_records`")
+        st.write("**Logic:** Contextual Hydration required.")
+        if st.button("Provision Unity Sandbox"):
+            st.session_state.flow_step = 3
+            st.rerun()
+    elif st.session_state.flow_step == 3:
+        st.success("⚡ **Sandbox Active**")
+        st.write("**Environment:** Serverless Node 881")
+        st.write("**Dataset:** Synthetic Masked Sample")
+    elif st.session_state.flow_step == 4:
+        st.balloons()
+        st.success("✅ **Mastery Verified**")
+        st.write("Validation metadata sent to Admin.")
+
+# --- MAIN WORKSPACE ---
+st.header("Databricks SQL Editor")
+
+col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown("### 🖥️ Databricks SQL Editor")
-    query = st.text_area("Workspace: /Users/randall.edwards@aws.com/", 
-                        value="SELECT user_id, email, last_login \nFROM prod.hr_data.pii_records \nWHERE region = 'US-EAST';", 
-                        height=250)
-    
-    if st.button("▶️ Execute Query"):
-        with st.spinner('Checking Unity Catalog Permissions...'):
-            time.sleep(1.5)
-            st.error("🚨 [403] PERMISSION_DENIED: User lacks SELECT privilege on 'prod.hr_data.pii_records'. Access to PII restricted by Policy: 'Global_Data_Privacy_v2'.")
+    if st.session_state.flow_step < 3:
+        # STEP 1: The Production Attempt
+        st.caption("Production Workspace: `/main/hr_data/`")
+        query = st.text_area("SQL Editor", 
+                            value="SELECT * FROM main.hr_pii.salary_records LIMIT 10;", 
+                            height=250)
+        if st.button("Run Query"):
+            with st.spinner("Executing..."):
+                time.sleep(1)
+                st.error("Error: [403] User lacks permissions. Access to 'main.hr_pii' is restricted by Global Governance Policy.")
+                st.session_state.flow_step = 2
+                st.rerun()
+    else:
+        # STEP 3: The Sandbox Success
+        st.caption("📍 Working in: `temp_unity_sandbox_session_881`")
+        sandbox_query = st.text_area("Sandbox Editor", 
+                                    value="SELECT user_id, 'REDACTED' as salary FROM synthetic_samples.hr_salary;", 
+                                    height=250)
+        if st.button("Validate in Sandbox"):
+            with st.spinner("Validating logic..."):
+                time.sleep(1)
+                st.table([{"user_id": 1, "salary": "REDACTED"}, {"user_id": 2, "salary": "REDACTED"}])
+                st.session_state.flow_step = 4
 
 with col2:
-    st.markdown("### 🤖 Guardian Insights")
-    st.info("I've analyzed your request against **Unity Catalog** metadata.")
+    st.subheader("Unity Pilot Insights")
+    if st.session_state.flow_step == 1:
+        st.write("I am monitoring your workspace telemetry. If you hit a technical or governance hurdle, I will provide real-time 'hydration'.")
     
-    st.markdown("""
-    **The Situation:**
-    You are attempting to access PII data in the `prod` catalog. 
-    Your current **SSO Group** only allows access to 'Anonymized' or 'Sample' schemas.
-    """)
-
-    st.warning("Action Required: Submit a Request in **Immuta** or **Unity Catalog** for permanent access.")
-
-    if st.button("🚀 Hydrate JIT Sandbox"):
-        st.write("---")
-        st.subheader("⚡ JIT Sandbox Ready")
-        st.write("I've provisioned a temporary **Serverless SQL Warehouse** with synthetic data that matches the schema of your target table.")
-        st.code("""
--- Use this sandbox table to test your logic while waiting for approval
-SELECT user_id, 'REDACTED' as email, last_login 
-FROM sandbox.synthetic_hr.pii_records_sample 
-WHERE region = 'US-EAST';
-        """, language="sql")
-        st.success("Outcome: User is unblocked. Organizational Latency reduced by 98%.")
+    if st.session_state.flow_step == 2:
+        st.info("I've identified the permission block in **Unity Catalog**. Instead of stopping work, let's validate your query logic in a synthetic sandbox.")
+    
+    if st.session_state.flow_step == 3:
+        st.write("Run the query in the Sandbox to demonstrate you can handle masked data correctly. This verifies your mastery to the Admin team.")
+    
+    if st.session_state.flow_step == 4:
+        st.markdown("### Next Steps")
+        st.write("Your logic is verified. I've prepared a pre-filled access request with your validation metadata.")
+        if st.button("📝 Submit Access Request"):
+            st.info("Request #4492 submitted to Unity Catalog Governance Team.")
+        if st.button("Reset Demo"):
+            st.session_state.flow_step = 1
+            st.rerun()
