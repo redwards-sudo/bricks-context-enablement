@@ -19,8 +19,8 @@ if 'flow_step' not in st.session_state:
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.title("🛡️ Your Unity Catalog Expert")
-    st.markdown("**Governed Enablement Infrastructure**")
+    st.title("🛡️ Unity Catalog Expert")
+    st.markdown("**Real Time AI Assistant**")
     st.markdown("---")
     
     steps = ["Monitoring", "Block Detected", "Sandbox Active", "Validation Complete", "Learning Follow-up"]
