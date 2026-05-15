@@ -1,8 +1,7 @@
 import streamlit as st
 import time
 
-# --- 1. SESSION STATE INITIALIZATION (MUST BE FIRST) ---
-# This prevents the NameError by ensuring these keys exist before any logic runs
+# --- 1. SESSION STATE INITIALIZATION ---
 if 'flow_step' not in st.session_state:
     st.session_state.flow_step = 1
 
@@ -13,7 +12,7 @@ if 'query_content' not in st.session_state:
 if st.session_state.flow_step == 1:
     st.session_state["prod_editor"] = st.session_state.query_content
 
-# --- 2. CONFIG & THEME ---
+# --- 2. CONFIG & ENHANCED THEME ---
 st.set_page_config(layout="wide", page_title="Unity Catalog Expert | Databricks PoC")
 
 st.markdown("""
@@ -23,11 +22,22 @@ st.markdown("""
         text-align: center; color: #63757e; margin-top: -10px; margin-bottom: 20px; 
         text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; font-weight: 600;
     }
-    .sql-card { 
-        background-color: #f9fbfb; border: 1px solid #dae0e2; border-radius: 12px; 
+    /* Distinct Card Styles */
+    .prod-card { 
+        background-color: #f9fbfb; border: 2px solid #dae0e2; border-radius: 12px; 
         padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    [data-testid="stSidebar"] { background-color: #f0f4f5; border-right: 2px solid #ff3621; padding-top: 30px; }
+    .sandbox-card { 
+        background-color: #fffdf5; border: 2px solid #ffcc00; border-radius: 12px; 
+        padding: 25px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2);
+    }
+    /* Sandbox Status Bar */
+    .sandbox-header {
+        background: #ffcc00; color: #4d3d00 !important; padding: 10px; 
+        border-radius: 8px 8px 0 0; font-weight: 700; text-align: center;
+        margin-bottom: -1px; font-size: 0.9rem;
+    }
+    [data-testid="stSidebar"] { background-color: #f0f4f5; border-right: 3px solid #ff3621; padding-top: 30px; }
     .stTextArea textarea { 
         background-color: #ffffff !important; color: #11262d !important; 
         border: 1px solid #cfd8dc !important; font-family: 'JetBrains Mono', monospace; font-size: 15px !important;
@@ -53,25 +63,29 @@ with st.sidebar:
     
     elif st.session_state.flow_step == 2:
         st.error("🚨 **Governance Alert**")
-        st.markdown("**Expert Logic:** You are trying to access non-anonymized PII records; let's help you with this.")
-        if st.button("Provision Unity Sandbox", key="provision_btn"):
-            with st.spinner("Initializing JIT Infrastructure..."):
-                time.sleep(1.5)
+        st.markdown("**Expert Logic:** You are attempting to access raw PII records. I've intercepted this 403 event.")
+        if st.button("Provision JIT Sandbox", key="provision_btn"):
+            with st.spinner("Executing Delta Deep Clone..."): # Slide 12 Ref
+                time.sleep(1.8)
                 st.session_state.flow_step = 3
-                # Update the sandbox editor state directly
                 st.session_state["sandbox_editor"] = "SELECT user_id, salary \nFROM synthetic_samples.hr_salary_masked \nWHERE department = 'Engineering';"
                 st.rerun()
-            
+    
     elif st.session_state.flow_step == 3:
         st.warning("⚡ **JIT Sandbox Active**")
-        st.write("Synthetic schema provisioned. Re-run the query using the masked table logic.")
+        st.markdown("""
+        **Environment Details:**
+        - **Isolation:** Delta Deep Clone 
+        - **Compute:** Serverless SQL 
+        - **TTL:** 30m (Reaper Job Active) 
+        """)
         st.code("synthetic_samples.hr_salary_masked", language="sql")
         
     elif st.session_state.flow_step == 4:
         st.balloons()
         st.success("✅ **Mastery Verified**")
-        st.write("Logic validated. 'Proof of Mastery' synced.")
-        if st.button("Sync to Learning Dashboard", key="sync_btn"):
+        st.write("Logic validated in sandbox. State transition written to 'mastery_events'.")
+        if st.button("Sync to Brick Index", key="sync_btn"):
             st.session_state.flow_step = 5
             st.rerun()
 
@@ -79,61 +93,68 @@ with st.sidebar:
 if st.session_state.flow_step < 5:
     st.header("Databricks SQL Editor")
     
-    with st.container():
-        st.markdown('<div class="sql-card">', unsafe_allow_html=True)
+    # PHASES 1 & 2: PROD WORKSPACE
+    if st.session_state.flow_step <= 2:
+        st.markdown('<div class="prod-card">', unsafe_allow_html=True)
+        st.caption("🔴 TARGET: PROD_CLUSTER_MAIN | Catalog: main")
         
-        # PHASES 1 & 2: PROD WORKSPACE
-        if st.session_state.flow_step <= 2:
-            st.caption("Target: PROD_CLUSTER_MAIN | Catalog: main")
-            
-            query_input = st.text_area("SQL Workspace", 
-                                      height=250, 
-                                      key="prod_editor")
-            
-            if st.button("▶️ Execute Query", key="exec_prod"):
-                if "salary" in query_input.lower() or "pii" in query_input.lower():
-                    with st.spinner("Checking Unity Catalog Permissions..."):
-                        time.sleep(1.2)
-                        st.session_state.flow_step = 2
-                        st.rerun()
-                else:
-                    st.info("Query executed. No PII detected.")
+        query_input = st.text_area("SQL Workspace", 
+                                  height=250, 
+                                  key="prod_editor")
         
-        # PHASES 3 & 4: SANDBOX WORKSPACE
-        else:
-            st.caption("Target: JIT_SANDBOX_881 | Catalog: sandbox")
-            
-            sandbox_input = st.text_area("Sandbox Workspace", 
-                                        height=250, 
-                                        key="sandbox_editor")
-            
+        if st.button("▶️ Execute Query", key="exec_prod"):
+            if "salary" in query_input.lower() or "pii" in query_input.lower():
+                with st.spinner("Unity Catalog Intercepting..."):
+                    time.sleep(1.2)
+                    st.session_state.flow_step = 2
+                    st.rerun()
+            else:
+                st.info("Query executed on PROD. No governance triggers detected.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # PHASES 3 & 4: SANDBOX WORKSPACE (THE VISUAL DELINEATION)
+    else:
+        st.markdown('<div class="sandbox-header">🚧 EPHEMERAL ANALYTICAL SANDBOX 🚧</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sandbox-card">', unsafe_allow_html=True)
+        st.caption("🟡 TARGET: JIT_SANDBOX_UC_881 | Catalog: sandbox_catalog")
+        
+        sandbox_input = st.text_area("Sandbox Workspace (Isolated Metadata)", 
+                                    height=250, 
+                                    key="sandbox_editor")
+        
+        col1, col2 = st.columns([2, 1])
+        with col1:
             if st.button("▶️ Execute Sandbox Query", key="exec_sandbox"):
                 if "synthetic_samples" in sandbox_input.lower():
-                    with st.spinner("Validating..."):
+                    with st.spinner("Validating Skill Mastery..."):
                         time.sleep(1)
                         st.session_state.flow_step = 4
                         st.rerun()
                 else:
-                    st.error("Sandbox Error: Please use the 'synthetic_samples' table.")
+                    st.error("Error: Please use the provisioned 'synthetic_samples' replica.")
+        with col2:
+            st.markdown(f"**Reaper TTL:** 29m 42s")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
 # RESULTS TABLE FOR STEP 4
 if st.session_state.flow_step == 4:
-    st.table([{"user_id": 1024, "salary": "REDACTED"}, {"user_id": 1025, "salary": "REDACTED"}])
+    st.subheader("Sandbox Query Results (Masked Output)")
+    st.table([{"user_id": 1024, "salary": "#### (MASKED)"}, {"user_id": 1025, "salary": "#### (MASKED)"}])
 
-# --- 5. PHASE 5: DASHBOARD ---
+# --- 5. PHASE 5: BRICK INDEX DASHBOARD ---
 elif st.session_state.flow_step == 5:
-    st.header("📖 Personal Learning Dashboard")
-    st.subheader("Continual Enablement Recap")
-    st.info("**Incident Event:** You encountered a Unity Catalog 403 block and successfully used a JIT Sandbox to resolve it.")
+    st.header("🧱 Practitioner 'Brick Index' Dashboard")
+    st.subheader("Competency Growth Tracking")
+    st.info("**SCD Type 2 Log:** Transitioned from 'BLOCKED' to 'MASTERED' on Unity Catalog Volume Access.")
     
-    st.markdown("### Mastery Verification Challenge")
-    choice = st.radio("Which component triggered the Expert assistant?", ["The Spark Engine", "Unity Catalog", "The Hive Metastore"])
+    st.markdown("### Mastery Verification")
+    choice = st.radio("How did we isolate the test environment?", 
+                      ["A custom if/then script", "Delta Deep Clone and Serverless SQL", "Shared Prod Clusters"])
     
-    if st.button("Submit & Finalize Credential"):
+    if st.button("Finalize Mastery Signal"):
         st.balloons()
-        st.success("Verified. Your 'Unity Catalog Expert' badge is now live.")
+        st.success("State Machine Updated. 'Proof of Mastery' synced to Enablement Roadmap[cite: 125].")
         if st.button("Reset Presentation"):
             for key in st.session_state.keys():
                 del st.session_state[key]
